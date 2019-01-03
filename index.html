@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src='https://www.google.com/recaptcha/api.js?render=SITE_KEY'></script>
+	</head>
+	<body>
+		<form>
+			<input type="text" id="name" placeholder="Name" required>
+			<br>
+			<input type="email" id="email" placeholder="Email" required>
+			<br>
+			<input type="password" id="password" placeholder="Password" required>
+			<br>
+			<div id="recaptcha" style="display: none" class="g-recaptcha" data-sitekey="6LdfqoYUAAAAAOM9epBifIGVSrZwVWcQRbIWRRER"></div>
+			<button id="submit_btn">Submit</button>
+			<button style="display: none" id="submit_btn_captcha">Submit</button>
+		</form>
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script>
+			$(document).ready(function(){
+				$("#submit_btn").click(function(){
+					if(!validate_form()){
+						return false;
+					}
+			    	var formData = {
+			    		name : $("#name").val(),
+			    		email :  $("#email").val(),
+			    		password :  $("#password").val(),
+			    	};
+
+					$.ajax({
+						url: "/validate_data",
+						type : 'GET',
+						success: function(result){
+							console.log(result);
+							if(result.success && result.show_recaptcha){
+								$("#recaptcha").attr("style","display:block");
+								$("#submit_btn").attr("style","display:none");
+								$("#submit_btn_captcha").attr("style","display:block");
+							}
+						}
+					});
+
+				});
+
+				$("#submit_btn_captcha").click(function(){
+					if(!validate_form()){
+						return false;
+					}
+			    	var formData = {
+			    		name : $("#name").val(),
+			    		email :  $("#email").val(),
+			    		password :  $("#password").val(),
+			    		g_recaptcha_response : grecaptcha.getResponse()
+			    	};					
+					$.ajax({
+						url: "/add_data",
+						type : 'POST',
+						contentType : "application/json",
+						data : JSON.stringify(formData),
+						dataType : 'json',
+						success: function(result){
+							if(result.success){
+								alert("successfully added data");
+							}
+						}
+					});
+				});
+
+				function validate_form(){
+				    if ($("#name").val() == ""){ 
+				        window.alert("Please enter your name."); 
+				        return false; 
+				    }
+				    if ($("#email").val() == ""){ 
+				        window.alert("Please enter your email."); 
+				        return false; 
+				    }
+				    if ($("#password").val() == ""){ 
+				        window.alert("Please enter your password."); 
+				        return false; 
+				    }
+				    if ($("#email").val().indexOf("@", 0) < 0){ 
+				        window.alert("Please enter a valid e-mail address."); 
+				        return false; 
+				    } 
+				   
+				    if ($("#email").val().indexOf(".", 0) < 0){ 
+				        window.alert("Please enter a valid e-mail address."); 
+				        return false; 
+				    }				    				    					
+				}
+			});
+		</script>
+	</body>
+</html>
